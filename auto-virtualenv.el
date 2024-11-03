@@ -83,12 +83,6 @@
   :type '(repeat string)
   :group 'auto-virtualenv)
 
-(defcustom auto-virtualenv-activation-hooks
-  '(find-file-hook)
-  "Hooks that trigger virtual environment activation."
-  :type '(repeat symbol)
-  :group 'auto-virtualenv)
-
 (defcustom auto-virtualenv-verbose t
   "Enable verbose output for debugging."
   :type 'boolean
@@ -100,8 +94,6 @@
   "The last project directory that was processed to prevent redundant checks.")
 (defvar auto-virtualenv-original-mode-line mode-line-format
   "The original mode line format to revert to when no virtualenv is active.")
-(defvar auto-virtualenv-mode-line "Venv: N/A"
-  "String to display in the mode line for the active virtual environment.")
 
 (defun auto-virtualenv--debug (msg &rest args)
   "Print MSG formatted with ARGS if `auto-virtualenv-verbose' is enabled."
@@ -114,6 +106,9 @@
       (propertize (format "[Venv: %s]" (file-name-nondirectory (directory-file-name auto-virtualenv-current-virtualenv)))
                   'face '(:weight bold :foreground "DeepSkyBlue"))
     (propertize "[Venv: N/A]" 'face '(:weight bold :foreground "DimGray"))))
+
+(defvar auto-virtualenv--modeline-item '(:eval (auto-virtualenv--modeline-string))
+  "Sexp for adding to the mode-line.")
 
 (defun auto-virtualenv-find-local-venv (project-root)
   "Check for a local virtual environment in PROJECT-ROOT. Return the path if found, otherwise nil."
@@ -158,7 +153,6 @@
     (setq exec-path (cons venv-bin exec-path))
     (setenv "VIRTUAL_ENV" auto-virtualenv-current-virtualenv)
     (setenv "PATH" (concat venv-bin path-separator (getenv "PATH"))))
-  (setq auto-virtualenv--modeline-item '(:eval (auto-virtualenv--modeline-string)))
   (add-to-list 'global-mode-string auto-virtualenv--modeline-item)
   (force-mode-line-update))
 
@@ -207,11 +201,6 @@
                 (auto-virtualenv-activate venv-path)
               (auto-virtualenv-deactivate)))
         (auto-virtualenv-deactivate)))))
-
-(defun auto-virtualenv-setup ()
-  "Setup auto-virtualenv with user-defined hooks."
-  (dolist (hook auto-virtualenv-activation-hooks)
-    (add-hook hook #'auto-virtualenv-find-and-activate)))
 
 (provide 'auto-virtualenv)
 
