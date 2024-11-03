@@ -108,15 +108,12 @@
   (when auto-virtualenv-verbose
     (message (apply 'format (concat "[auto-virtualenv] " msg) args))))
 
-(defun auto-virtualenv-update-mode-line ()
+(defun auto-virtualenv--modeline-string ()
   "Update the mode line to show the active virtual environment, or 'N/A' if none."
-  (setq auto-virtualenv-mode-line
-        (if auto-virtualenv-current-virtualenv
-            (propertize (format "[Venv: %s]" (file-name-nondirectory (directory-file-name auto-virtualenv-current-virtualenv)))
-                        'face '(:weight bold :foreground "DeepSkyBlue"))
-          (propertize "[Venv: N/A]" 'face '(:weight bold :foreground "DimGray"))))
-  (setq global-mode-string (list auto-virtualenv-mode-line))
-  (force-mode-line-update))
+  (if auto-virtualenv-current-virtualenv
+      (propertize (format "[Venv: %s]" (file-name-nondirectory (directory-file-name auto-virtualenv-current-virtualenv)))
+                  'face '(:weight bold :foreground "DeepSkyBlue"))
+    (propertize "[Venv: N/A]" 'face '(:weight bold :foreground "DimGray"))))
 
 (defun auto-virtualenv-find-local-venv (project-root)
   "Check for a local virtual environment in PROJECT-ROOT. Return the path if found, otherwise nil."
@@ -161,7 +158,9 @@
     (setq exec-path (cons venv-bin exec-path))
     (setenv "VIRTUAL_ENV" auto-virtualenv-current-virtualenv)
     (setenv "PATH" (concat venv-bin path-separator (getenv "PATH"))))
-  (auto-virtualenv-update-mode-line))
+  (setq auto-virtualenv--modeline-item '(:eval (auto-virtualenv--modeline-string)))
+  (add-to-list 'global-mode-string auto-virtualenv--modeline-item)
+  (force-mode-line-update))
 
 (defun auto-virtualenv-deactivate ()
   "Deactivate any active virtual environment without resetting the mode line to the original value."
@@ -172,18 +171,21 @@
       (setenv "PATH" (mapconcat 'identity (delete venv-bin (split-string (getenv "PATH") path-separator)) path-separator))
       (setenv "VIRTUAL_ENV" nil)
       (setq auto-virtualenv-current-virtualenv nil)
-      (auto-virtualenv--debug "Virtualenv deactivated, mode line set to N/A"))
-    (auto-virtualenv-update-mode-line)))
+      (auto-virtualenv--debug "Virtualenv deactivated, mode line set to N/A")))
+  (setq global-mode-string
+        (seq-remove (lambda (item) (equal item auto-virtualenv--modeline-item))
+                    global-mode-string))
+  (force-mode-line-update))
 
 (defun auto-virtualenv-locate-project-root ()
   "Find the project root using `projectile-project-root` if available, else search for `.git` markers."
   (if (and (featurep 'projectile) (fboundp 'projectile-project-root))
       (projectile-project-root)
     (let ((dir (locate-dominating-file default-directory
-                                        (lambda (parent)
-                                          (cl-some (lambda (marker)
-                                                     (file-exists-p (expand-file-name marker parent)))
-                                                   '(".git" "setup.py" "Pipfile" "pyproject.toml"))))))
+                                       (lambda (parent)
+                                         (cl-some (lambda (marker)
+                                                    (file-exists-p (expand-file-name marker parent)))
+                                                  '(".git" "setup.py" "Pipfile" "pyproject.toml"))))))
       (if dir
           (expand-file-name dir)
         (auto-virtualenv--debug "No project root found.")
