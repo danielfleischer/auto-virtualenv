@@ -3,7 +3,7 @@
 ;; Author: Marcwebbie <marcwebbie@gmail.com>
 ;; Maintainer: Marcwebbie <marcwebbie@gmail.com>
 ;; URL: https://github.com/marcwebbie/auto-virtualenv
-;; Version: 3.0.0
+;; Version: 3.0.1
 ;; Keywords: python, virtualenv, environment, tools, projects
 ;; Package-Requires: ((cl-lib "0.5"))
 ;; License: GPL-3.0-or-later
@@ -102,6 +102,8 @@
   "The original mode line format to revert to when no virtualenv is active.")
 (defvar auto-virtualenv-mode-line "Venv: N/A"
   "String to display in the mode line for the active virtual environment.")
+(defvar auto-virtualenv--modeline-item nil
+  "Current modeline item for the package.")
 
 (defun auto-virtualenv--debug (msg &rest args)
   "Print MSG formatted with ARGS if `auto-virtualenv-verbose' is enabled."
