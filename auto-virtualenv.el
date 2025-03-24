@@ -45,7 +45,7 @@
 
 (require 'cl-lib)
 (require 'json)
-(require 'projectile)
+;; (require 'projectile)
 
 (defgroup auto-virtualenv nil
   "Automatically activate Python virtual environments."
@@ -65,7 +65,7 @@
   :group 'auto-virtualenv)
 
 (defcustom auto-virtualenv-activation-hooks
-  '(find-file-hook projectile-after-switch-project-hook)
+  '(find-file-hook)
   "Hooks that trigger virtual environment activation."
   :type '(repeat symbol)
   :group 'auto-virtualenv)
@@ -167,17 +167,15 @@
 
 (defun auto-virtualenv-locate-project-root ()
   "Find the project root using `projectile-project-root` if available, else search for `.git` markers."
-  (if (and (featurep 'projectile) (fboundp 'projectile-project-root))
-      (projectile-project-root)
-    (let ((dir (locate-dominating-file default-directory
-                                       (lambda (parent)
-                                         (cl-some (lambda (marker)
-                                                    (file-exists-p (expand-file-name marker parent)))
-                                                  '(".git" "setup.py" "Pipfile" "pyproject.toml"))))))
-      (if dir
-          (expand-file-name dir)
-        (auto-virtualenv--debug "No project root found.")
-        nil))))
+  (let ((dir (locate-dominating-file default-directory
+                                     (lambda (parent)
+                                       (cl-some (lambda (marker)
+                                                  (file-exists-p (expand-file-name marker parent)))
+                                                '(".git" "setup.py" "Pipfile" "pyproject.toml"))))))
+    (if dir
+        (expand-file-name dir)
+      (auto-virtualenv--debug "No project root found.")
+      nil)))
 
 (defun auto-virtualenv-find-and-activate ()
   "Find and activate a virtual environment based on the current project."
