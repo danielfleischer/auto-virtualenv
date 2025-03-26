@@ -147,7 +147,7 @@
     (setq exec-path (cons venv-bin exec-path))
     (setenv "VIRTUAL_ENV" auto-virtualenv-current-virtualenv)
     (setenv "PATH" (concat venv-bin path-separator (getenv "PATH"))))
-  (auto-virtualenv-update-mode-line)
+  ;; (auto-virtualenv-update-mode-line)
   ;; Reload `lsp-mode` or `pyright` if enabled
   (when (and auto-virtualenv-reload-lsp (bound-and-true-p lsp-mode))
     (auto-virtualenv--debug "Reloading lsp-mode for virtual environment at %s" venv-path)
@@ -163,7 +163,8 @@
       (setenv "VIRTUAL_ENV" nil)
       (setq auto-virtualenv-current-virtualenv nil)
       (auto-virtualenv--debug "Virtualenv deactivated"))
-    (auto-virtualenv-update-mode-line)))
+    ;; (auto-virtualenv-update-mode-line)
+    ))
 
 (defun auto-virtualenv-locate-project-root ()
   "Find the project root using `projectile-project-root` if available, else search for `.git` markers."
@@ -185,7 +186,8 @@
         (progn
           (auto-virtualenv--debug "Skipping activation as project root has not changed or is empty.")
           ;; Always update the mode line, even if activation is skipped
-          (auto-virtualenv-update-mode-line))
+          ;; (auto-virtualenv-update-mode-line)
+          )
       (setq auto-virtualenv-last-project project-root)
       (if (auto-virtualenv-is-python-project project-root)
           (let* ((project-name (file-name-nondirectory (directory-file-name project-root)))
