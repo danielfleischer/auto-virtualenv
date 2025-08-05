@@ -141,6 +141,7 @@
   (setq auto-virtualenv-current-virtualenv (file-name-as-directory venv-path))
   (let ((venv-bin (concat auto-virtualenv-current-virtualenv "bin")))
     (setq exec-path (cons venv-bin exec-path))
+    (setq python-shell-virtualenv-root auto-virtualenv-current-virtualenv)
     (setenv "VIRTUAL_ENV" auto-virtualenv-current-virtualenv)
     (setenv "PATH" (concat venv-bin path-separator (getenv "PATH"))))
   (force-mode-line-update t)
@@ -158,6 +159,7 @@
       (setenv "PATH" (mapconcat 'identity (delete venv-bin (split-string (getenv "PATH") path-separator)) path-separator))
       (setenv "VIRTUAL_ENV" nil)
       (setq auto-virtualenv-current-virtualenv nil)
+      (setq python-shell-virtualenv-root nil)
       (auto-virtualenv--debug "Virtualenv deactivated"))
     (force-mode-line-update t)))
 
