@@ -208,7 +208,7 @@
   "Setup auto-virtualenv with user-defined hooks."
   (dolist (hook auto-virtualenv-activation-hooks)
     (add-hook hook #'auto-virtualenv-find-and-activate))
-  (add-to-list 'global-mode-string '((:eval (auto-virtualenv-update-mode-line))) t))
+  (add-to-list 'global-mode-string '((:eval (auto-virtualenv--modeline-string))) t))
 
 (provide 'auto-virtualenv)
 
